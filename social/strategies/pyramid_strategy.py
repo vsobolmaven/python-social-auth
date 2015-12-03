@@ -78,3 +78,24 @@ class PyramidStrategy(BaseStrategy):
     def build_absolute_uri(self, path=None):
         """Build absolute URI with given (optional) path"""
         return build_absolute_uri(self.request.host_url, path)
+
+
+    def request_is_secure(self):
+        """Is the request using HTTPS?"""
+        return self.request.scheme.lower() == 'https'
+
+    def request_path(self):
+        """path of the current request"""
+        return self.request.path
+
+    def request_port(self):
+        """path of the current request"""
+        return self.request.host_port
+
+    def request_get(self):
+        """Request GET data"""
+        return self.request.GET
+
+    def request_post(self):
+        """Request GET data"""
+        return self.request.POST
