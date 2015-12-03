@@ -75,11 +75,15 @@ class BaseAuth(object):
         self.strategy = self.strategy or kwargs.get('strategy')
         self.redirect_uri = self.redirect_uri or kwargs.get('redirect_uri')
         self.data = self.strategy.request_data()
-        pipeline = self.strategy.get_pipeline()
+        pipeline = self.get_pipeline()
+
         kwargs.setdefault('is_new', False)
         if 'pipeline_index' in kwargs:
             pipeline = pipeline[kwargs['pipeline_index']:]
         return self.pipeline(pipeline, *args, **kwargs)
+
+    def get_pipeline(self):
+        return self.setting('PIPELINE', self.strategy.get_pipeline())
 
     def pipeline(self, pipeline, pipeline_index=0, *args, **kwargs):
         out = self.run_pipeline(pipeline, pipeline_index, *args, **kwargs)
