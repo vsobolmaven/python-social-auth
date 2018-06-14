@@ -24,6 +24,14 @@ class FacebookOAuth2(BaseOAuth2):
     REVOKE_TOKEN_URL = 'https://graph.facebook.com/v2.3/{uid}/permissions'
     REVOKE_TOKEN_METHOD = 'DELETE'
     USER_DATA_URL = 'https://graph.facebook.com/v2.3/me'
+    # Do not add 'redirect_state' query string parameter to 'redirect_uri'
+    # in order to use fixed list of redirect URIs with Facebook's 'Use Strict
+    # Mode for Redirect URIs' setting on.
+    # See
+    # https://developers.facebook.com/docs/facebook-login/security/#stateparam
+    # for details.
+    # This setting is also set to False in the upstream version of the lib.
+    REDIRECT_STATE = False
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires', 'expires')
