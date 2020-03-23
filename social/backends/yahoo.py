@@ -2,11 +2,15 @@
 Yahoo OpenId, OAuth1 and OAuth2 backends, docs at:
     http://psa.matiasaguirre.net/docs/backends/yahoo.html
 """
+import logging
+import requests
 from requests.auth import HTTPBasicAuth
 
 from social.utils import handle_http_errors
 from social.backends.open_id import OpenIdAuth
 from social.backends.oauth import BaseOAuth2, BaseOAuth1
+
+logger = logging.getLogger(__name__)
 
 
 class YahooOpenId(OpenIdAuth):
@@ -106,11 +110,21 @@ class YahooOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        url = 'https://social.yahooapis.com/v1/user/{0}/profile?format=json' \
-                .format(kwargs['response']['xoauth_yahoo_guid'])
-        return self.get_json(url, headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
-        }, method='GET')['profile']
+        try:
+            url = 'https://social.yahooapis.com/v1/user/{0}/profile?format=json' \
+                    .format(self._get_guid(access_token))
+            response = self.get_json(url, headers={
+                'Authorization': 'Bearer {0}'.format(access_token)
+            }, method='GET')
+            return response['profile']
+        except requests.HTTPError as err:
+            if err.response.status_code == 403:
+                # Application may not requested the needed scope and it
+                # may not need the information. Thus simply log as debug
+                # message.
+                logger.debug(
+                    "Failed to load user profile data with error: %s." % err)
+                return {}
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
@@ -157,3 +171,9 @@ class YahooOAuth2(BaseOAuth2):
             'code': self.data.get('code', ''),  # server response code
             'redirect_uri': self.get_redirect_uri(state)
         }
+
+    def _get_guid(self, access_token):
+        response =  self.get_json('https://social.yahooapis.com/v1/me/guid?format=json', headers={
+            'Authorization': 'Bearer {0}'.format(access_token)
+        }, method='GET')
+        return response['guid']['value']
