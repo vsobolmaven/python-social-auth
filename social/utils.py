@@ -97,6 +97,10 @@ def sanitize_redirect(host, redirect_to):
         else:
             if netloc == host:
                 return redirect_to
+            else:
+                raise ValueError(
+                    "External redirect URI is not allowed: {}".format(
+                        redirect_to))
 
 
 def user_is_authenticated(user):
